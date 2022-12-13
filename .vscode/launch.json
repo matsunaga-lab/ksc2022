@@ -5,27 +5,13 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "build",
+			"name": "Launch Program",
+			"program": "${workspaceFolder}/index.js",
 			"request": "launch",
-			"runtimeArgs": [
-				"run",
-				"build"
-			],
-			"runtimeExecutable": "npm",
-			"type": "node"
-		},
-		{
-			"name": "Launch via NPM",
-			"request": "launch",
-			"runtimeArgs": [
-				"run",
-				"start"
-			],
-			"runtimeExecutable": "npm",
 			"skipFiles": [
 				"<node_internals>/**"
 			],
 			"type": "node"
-		},
+		}
 	]
 }
