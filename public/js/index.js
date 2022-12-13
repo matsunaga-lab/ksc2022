@@ -21,7 +21,7 @@ function animate() {
 		camera_width = SIZE / window.innerHeight * window.innerWidth;
 		camera_height = SIZE;
 	}
-	const camera = new THREE.OrthographicCamera(camera_width / -2, camera_width / 2, camera_height / -2, camera_height / 2, 0.1, 1000);
+	const camera = new THREE.OrthographicCamera(camera_width / -2, camera_width / 2, camera_height / -2, camera_height / 2, -1000, 1000);
 
 	if (points) {
 		if (geometry == null) {
@@ -47,7 +47,7 @@ function animate() {
 
 animate();
 
-let worker = new Worker('js/mlsmpm.js');
+let worker = new Worker('js/mps.js');
 worker.addEventListener('message', function (e) {
 	points = e.data.points;
 }, false);
