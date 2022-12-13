@@ -2,3 +2,17 @@ body {
 	margin: 0;
 	padding: 0;
 }
+
+#stepCount {
+	position: absolute;
+	top: 5dvmax;
+	left: 5dvmax;
+	color: white;
+}
+
+#processingTime {
+	position: absolute;
+	top: 7dvmax;
+	left: 5dvmax;
+	color: white;
+}

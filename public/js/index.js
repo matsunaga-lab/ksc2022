@@ -53,4 +53,6 @@ animate();
 let worker = new Worker('js/mlsmpm.js');
 worker.addEventListener('message', function (e) {
 	points = e.data.points;
+	document.getElementById('stepCount').textContent = e.data.steps ? `${e.data.steps} steps` : '';
+	document.getElementById('processingTime').textContent = e.data.processingTime ? `${Math.floor(e.data.processingTime)} ms/step` : '';
 }, false);

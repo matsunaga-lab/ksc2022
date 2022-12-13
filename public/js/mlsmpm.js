@@ -250,9 +250,15 @@ function calcDensity(base_coord, weights) {
 
 var global_scope = this.self;
 
+let step = 0;
 setInterval(() => {
+	const startTime = performance.now();
 	update();
+	const endTime = performance.now();
+
 	global_scope.postMessage({
+		processingTime: endTime - startTime,
+		steps: ++step,
 		points: convertParticlesToPoints(particles)
 	});
 });
