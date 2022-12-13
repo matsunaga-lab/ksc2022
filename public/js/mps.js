@@ -1,3 +1,5 @@
+importScripts('math.js')
+
 let points;
 
 function update() {
