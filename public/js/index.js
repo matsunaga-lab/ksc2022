@@ -21,7 +21,10 @@ function animate() {
 		camera_width = SIZE / window.innerHeight * window.innerWidth;
 		camera_height = SIZE;
 	}
-	const camera = new THREE.OrthographicCamera(camera_width / -2, camera_width / 2, camera_height / -2, camera_height / 2, -1000, 1000);
+	const camera = new THREE.OrthographicCamera(camera_width / -2, camera_width / 2, camera_height / -2, camera_height / 2);
+	camera.up.set(0, -1, 0);
+	camera.position.set(0, 0, -10);
+	camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 	if (points) {
 		if (geometry == null) {
@@ -29,7 +32,7 @@ function animate() {
 			geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
 
 			const material = new THREE.PointsMaterial({
-				size: 5,
+				size: 2,
 				color: 0xffffff,
 			});
 
@@ -47,7 +50,7 @@ function animate() {
 
 animate();
 
-let worker = new Worker('js/mps.js');
+let worker = new Worker('js/mlsmpm.js');
 worker.addEventListener('message', function (e) {
 	points = e.data.points;
 }, false);
