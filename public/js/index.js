@@ -3,28 +3,28 @@ const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer();
 document.body.appendChild(renderer.domElement);
 
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+const SIZE = 1;
+let camera_width;
+let camera_height;
+if (window.innerWidth <= window.innerHeight) {
+	camera_width = SIZE;
+	camera_height = SIZE / window.innerWidth * window.innerHeight;
+} else {
+	camera_width = SIZE / window.innerHeight * window.innerWidth;
+	camera_height = SIZE;
+}
+const camera = new THREE.OrthographicCamera(camera_width / -2, camera_width / 2, camera_height / -2, camera_height / 2);
+camera.up.set(0, -1, 0);
+camera.position.set(0, 0, -10);
+camera.lookAt(new THREE.Vector3(0, 0, 0));
+
 let points = null;
 let geometry = null;
 
 function animate() {
 	requestAnimationFrame(animate);
-
-	renderer.setSize(window.innerWidth, window.innerHeight);
-
-	const SIZE = 1;
-	let camera_width;
-	let camera_height;
-	if (window.innerWidth <= window.innerHeight) {
-		camera_width = SIZE;
-		camera_height = SIZE / window.innerWidth * window.innerHeight;
-	} else {
-		camera_width = SIZE / window.innerHeight * window.innerWidth;
-		camera_height = SIZE;
-	}
-	const camera = new THREE.OrthographicCamera(camera_width / -2, camera_width / 2, camera_height / -2, camera_height / 2);
-	camera.up.set(0, -1, 0);
-	camera.position.set(0, 0, -10);
-	camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 	if (points) {
 		if (geometry == null) {
