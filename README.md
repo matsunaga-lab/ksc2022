@@ -19,6 +19,8 @@ docker-compose up
 ```
 を実行する。
 
+http://localhost:3000/ にアクセスする。
+
 ### サーバー実行 (Nodeでホストする場合)
 node をインストールする
 https://nodejs.org/ja/download/
@@ -28,6 +30,9 @@ https://nodejs.org/ja/download/
 npm install
 ```
 
+実行する。
 ```
 npm start
 ```
+
+http://localhost:3000/ にアクセスする。
