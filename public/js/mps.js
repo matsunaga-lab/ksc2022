@@ -1,5 +1,3 @@
-importScripts('math.js')
-
 const tank_width = 0.8; // [m]
 const tank_height = 0.6; // [m]
 const liquid_width = 0.2; // [m]
@@ -132,6 +130,68 @@ function convertParticlesToPoints(particles) {
 		points.push((particles[i].x[0]-offsetX)*scale, (particles[i].x[1]-offsetY)*scale, 0);
 	}
 	return points;
+}
+
+function convertParticlesToSizes(particles) {
+	const sizes = new Array(particles.length);
+	for (let i = 0; i < particles.length; i++) {
+		if (particles[i].type == type_wall || particles[i].type == type_dummy) {
+			sizes[i] = 10;
+		} else {
+			sizes[i] = 3;
+		}
+	}
+	return sizes;
+}
+
+const convertParticlesToColors = convertParticlesVeclocityToColors;
+
+function convertParticlesVeclocityToColors(particles) {
+	const vels = [];
+	for (let i = 0; i < particles.length; i++) {
+		vels.push(Math.sqrt(particles[i].v[0] * particles[i].v[0] + particles[i].v[1] * particles[i].v[1]));
+	}
+
+	let v_max = Number.NEGATIVE_INFINITY;
+	let v_min = Number.POSITIVE_INFINITY;
+	for (let i = 0; i < particles.length; i++) {
+		v_max = Math.max(v_max, vels[i]);
+		v_min = Math.min(v_min, vels[i]);
+	}
+
+	const colors = [];
+	for (let i = 0; i < particles.length; i++) {
+		if (particles[i].type == type_fluid) {
+			colors.push(calcColorRGB((vels[i] - v_min) / (v_max - v_min)));
+		} else {
+			colors.push({ r: 1, g: 1, b: 1 });
+		}
+	}
+	return colors;
+}
+
+function sigmoid(x, gain, offset) {
+	return (Math.tanh(gain * (x + offset) / 2) + 1) / 2;
+}
+
+function clamp(x, min, max) {
+	return Math.min(max, Math.max(x, min));
+}
+
+// https://qiita.com/masato_ka/items/c178a53c51364703d70b
+function calcColorRGB(x) {
+	const gain = 10;
+	const offset_x = 0.2;
+	const offset_green = 0.6;
+
+	x = clamp(x, 0, 1);
+	x = x * 2 - 1;
+
+	const r = sigmoid(x, gain, -1 * offset_x);
+	const b = 1 - sigmoid(x, gain, offset_x);
+	const g = sigmoid(x, gain, offset_green) + (1 - sigmoid(x, gain, -1 * offset_green)) - 1;
+
+	return { r, g, b };
 }
 
 function updateBucket() {
@@ -380,6 +440,8 @@ setInterval(() => {
 	global_scope.postMessage({
 		processingTime: endTime - startTime,
 		steps: step,
-		points: convertParticlesToPoints(particles)
+		points: convertParticlesToPoints(particles),
+		colors: convertParticlesToColors(particles),
+		sizes: convertParticlesToSizes(particles),
 	});
 });
