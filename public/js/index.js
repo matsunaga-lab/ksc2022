@@ -50,7 +50,7 @@ function animate() {
 
 animate();
 
-let worker = new Worker('js/mlsmpm.js');
+let worker = new Worker('js/mps.js');
 worker.addEventListener('message', function (e) {
 	points = e.data.points;
 	document.getElementById('stepCount').textContent = e.data.steps ? `${e.data.steps} steps` : '';
