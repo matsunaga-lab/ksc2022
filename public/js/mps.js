@@ -472,6 +472,8 @@ function convertParticlesVeclocityToColors(particles) {
 	for (let i = 0; i < particles.length; i++) {
 		if (particles[i].type == type_fluid) {
 			colors.push(calcColorRGB((vels[i] - v_min) / (v_max - v_min)));
+		} else if (particles[i].type == type_dummy) {
+			colors.push({ r: 0.5, g: 0.5, b: 0.5 });
 		} else {
 			colors.push({ r: 1, g: 1, b: 1 });
 		}
