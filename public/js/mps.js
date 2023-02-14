@@ -157,6 +157,7 @@ setInterval(() => {
 	global_scope.postMessage({
 		processingTime: endTime - startTime,
 		steps: step,
+		time: time,
 		points: convertParticlesToPoints(particles),
 		colors: convertParticlesToColors(particles),
 		sizes: convertParticlesToSizes(particles),
