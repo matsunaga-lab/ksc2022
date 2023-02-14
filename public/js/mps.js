@@ -37,6 +37,9 @@ let view_x_max = 1.0; // [m]
 let view_y_min = -1.0; // [m]
 let view_y_max = 1.0; // [m]
 
+// インジェクタ（流入口）
+let injectors = []
+
 // 粒子データ
 const particles = createInitParticles();
 
@@ -109,6 +112,22 @@ function createInitParticles() {
 				p: 0.0,
 			});
 		}
+	}
+
+	// インジェクタの作成
+	for (let i = 0; i < 10; ++i) {
+		injectors.push({
+			x: [ell0*0.5, 0.5+ell0*i],
+			v: [1.0, 0.0],
+			f: 0.0
+		})
+	}
+	for (let i = 0; i < 10; ++i) {
+		injectors.push({
+			x: [tank_width-ell0*0.5, 0.5+ell0*i],
+			v: [-1.0, 0.0],
+			f: 0.0
+		})
 	}
 
 	return ret;
@@ -241,6 +260,48 @@ function calc_dt() {
 	if( dt > dt_bfcourant ){ dt = dt_bfcourant; }
 	if( dt > dt_diffusion ){ dt = dt_diffusion; }
 	return dt
+}
+
+// インジェクタから粒子を追加する関数
+function inject_particles(dt) {
+	for (let i = 0; i < injectors.length; i++) {
+		const x_i = injectors[i].x[0];
+		const y_i = injectors[i].x[1];
+		const u_i = injectors[i].v[0];
+		const v_i = injectors[i].v[1];
+		injectors[i].f += ell0*Math.sqrt(u_i*u_i+v_i*v_i)*dt;
+		if( injectors[i].f < ell0*ell0 ){
+			continue; // 積算流入体積が単一粒子体積ell0^d未満なのでまだ粒子追加しない
+		}
+		const neighbors = getNeighbors(x_i,y_i);
+		let r_sq_min = Number.POSITIVE_INFINITY;
+		let j_min = -1;
+		for (let k = 0; k < neighbors.length; k++) {
+			const j = neighbors[k];
+			const x_ij = particles[j].x[0]-x_i;
+			const y_ij = particles[j].x[1]-y_i;
+			const r_sq = x_ij*x_ij+y_ij*y_ij;
+			if( r_sq_min > r_sq ){
+				r_sq_min = r_sq;
+				j_min = j;
+			}
+		}
+		if( r_sq_min < ell0*ell0 ){
+			// 流入口とオーバーラップしている粒子が存在するので粒子追加を見送る
+			// オーバーラップしている粒子の速度を流入速度に強制書き換え
+			particles[j_min].v[0] = u_i;
+			particles[j_min].v[1] = v_i;
+			continue;
+		}
+		// 粒子を追加
+		particles.push({
+			type: type_fluid,
+			x: [x_i, y_i],
+			v: [u_i, v_i],
+			p: 0.0,
+		})
+		injectors[i].f = 0.0; // 積算流入体積をクリア
+	}
 }
 
 // 時間を1ステップ進める関数
@@ -404,6 +465,9 @@ function update() {
 		particles[i].x[0] -= gradP_x*dtdt_by_rho;
 		particles[i].x[1] -= gradP_y*dtdt_by_rho;
 	}
+
+	// インジェクタから粒子を追加する
+	inject_particles(dt)
 
 	// ステップ数と時間を進める
 	step += 1;
