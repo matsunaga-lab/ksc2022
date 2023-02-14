@@ -65,6 +65,7 @@ worker.addEventListener('message', function (e) {
 	points = e.data.points;
 	colors = convertColorRGB(e.data.colors);
 	sizes = e.data.sizes;
+	document.getElementById('time').textContent = e.data.time ? `${Math.round(e.data.time * 100) / 100} s` : '';
 	document.getElementById('stepCount').textContent = e.data.steps ? `${e.data.steps} steps` : '';
 	document.getElementById('processingTime').textContent = e.data.processingTime ? `${Math.floor(e.data.processingTime)} ms/step` : '';
 }, false);
