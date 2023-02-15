@@ -56,9 +56,21 @@ function animate() {
 	}
 
 	renderer.render(scene, camera);
+
+	if (worker) {
+		worker.postMessage({
+			isMouseButtonPressed
+		});
+	}
 };
 
-animate();
+let isMouseButtonPressed = false;
+document.body.addEventListener('mousedown', () => {
+	isMouseButtonPressed = true;
+});
+document.body.addEventListener('mouseup', () => {
+	isMouseButtonPressed = false;
+});
 
 let worker = new Worker('js/mps.js');
 worker.addEventListener('message', function (e) {
@@ -69,6 +81,8 @@ worker.addEventListener('message', function (e) {
 	document.getElementById('stepCount').textContent = e.data.steps ? `${e.data.steps} steps` : '';
 	document.getElementById('processingTime').textContent = e.data.processingTime ? `${Math.floor(e.data.processingTime)} ms/step` : '';
 }, false);
+
+animate();
 
 const convertColorRGB = (colors) => {
 	if (colors == null) {

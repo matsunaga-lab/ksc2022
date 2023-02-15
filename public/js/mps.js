@@ -1,3 +1,10 @@
+/* index.js(メインスレッド)から送られてきた情報 */
+//　マウスの左クリックが押されているか
+let isMouseButtonPressed = false;
+onmessage = (e) => {
+	isMouseButtonPressed = e.data.isMouseButtonPressed;
+};
+
 // 物理パラメタ
 const dim = 2; // 空間次元数
 const rho = 1.0e+3; // 密度 [kg/m^3]
