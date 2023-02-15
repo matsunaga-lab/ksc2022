@@ -1,8 +1,16 @@
 /* index.js(メインスレッド)から送られてきた情報 */
 //　マウスの左クリックが押されているか
 let isMouseButtonPressed = false;
+// シミュレーション世界内でのカーソルの位置
+let mousePosition = {
+	x: 0,
+	y: 0,
+};
 onmessage = (e) => {
 	isMouseButtonPressed = e.data.isMouseButtonPressed;
+
+	/* カメラ基準の座標をシミュレーション世界の座標に変換して、mousePositionに保存する */
+	mousePosition = convertMousePosition(e.data.mousePosition);
 };
 
 // 物理パラメタ
@@ -484,6 +492,16 @@ function update() {
 	time += dt;
 }
 
+// マウスカーソルの位置をシミュレーション世界の座標に変換する。
+function convertMousePosition(cursorPosition) {
+	const offsetX = (view_x_min+view_x_max)/2;
+	const offsetY = (view_y_min+view_y_max)/2;
+	const scale = 1.0/Math.max(view_x_max-view_x_min,view_y_max-view_y_min);
+	return {
+		x: cursorPosition.x / scale + offsetX,
+		y: cursorPosition.y / scale + offsetY,
+	}
+}
 
 // 描画用：粒子位置を返す関数
 function convertParticlesToPoints(particles) {

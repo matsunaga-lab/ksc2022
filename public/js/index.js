@@ -59,17 +59,40 @@ function animate() {
 
 	if (worker) {
 		worker.postMessage({
-			isMouseButtonPressed
+			isMouseButtonPressed,
+			mousePosition
 		});
 	}
 };
 
 let isMouseButtonPressed = false;
+let mousePosition = {
+	x: 0,
+	y: 0
+}
 document.body.addEventListener('mousedown', () => {
 	isMouseButtonPressed = true;
 });
 document.body.addEventListener('mouseup', () => {
 	isMouseButtonPressed = false;
+});
+document.body.addEventListener('mousemove', (e) => {
+	// カメラ中心を(0, 0)として、マウスカーソルの座標を算出し、mousePositionに保存する。
+	const offset = {
+		x: e.offsetX - window.innerWidth / 2,
+		y: -(e.offsetY - window.innerHeight / 2)
+	}
+	if (window.innerWidth <= window.innerHeight) {
+		mousePosition = {
+			x: offset.x / window.innerWidth,
+			y: offset.y / window.innerWidth,
+		}
+	} else {
+		mousePosition = {
+			x: offset.x / window.innerHeight,
+			y: offset.y / window.innerHeight,
+		}
+	}
 });
 
 let worker = new Worker('js/mps.js');
