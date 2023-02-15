@@ -313,6 +313,9 @@ function inject_particles(dt) {
 
 // 時間を1ステップ進める関数
 function update() {
+	if (!isMouseButtonPressed) {
+		return;
+	}
 	// 時間ステップを計算する
 	const dt = calc_dt();
 
