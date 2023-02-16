@@ -145,7 +145,7 @@ function updateBucket() {
 	}
 	for (let i = 1; i < particles.length; i++) {
 		const x_i = particles[i].x[0];
-		const y_i = particles[i].x[0];
+		const y_i = particles[i].x[1];
 		if( bucket_x_min > x_i ){ bucket_x_min = x_i; }else if( bucket_x_max < x_i ){ bucket_x_max = x_i; }
 		if( bucket_y_min > y_i ){ bucket_y_min = y_i; }else if( bucket_y_max < y_i ){ bucket_y_max = y_i; }
 	}
