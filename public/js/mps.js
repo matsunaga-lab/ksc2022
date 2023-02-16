@@ -545,6 +545,59 @@ function convertParticlesVeclocityToColors(particles) {
 	return colors;
 }
 
+function convertParticlesToArrows(particles) {
+	const vels = [];
+	for (let i = 0; i < particles.length; i++) {
+		vels.push(Math.sqrt(particles[i].v[0] * particles[i].v[0] + particles[i].v[1] * particles[i].v[1]));
+	}
+
+	let v_max = 0.0;
+	let v_min = 0.0;
+	for (let i = 0; i < particles.length; i++) {
+		v_max = Math.max(v_max, vels[i]);
+		v_min = Math.min(v_min, vels[i]);
+	}
+
+	if (v_max == 0.0) {
+		v_max = 1.0;
+	}
+	
+	const max_arrow_length = ell0*3;
+	const scale_arrow_length = max_arrow_length/v_max;
+	
+	const offsetX = (view_x_min+view_x_max)/2;
+	const offsetY = (view_y_min+view_y_max)/2;
+	const scale = 1.0/Math.max(view_x_max-view_x_min,view_y_max-view_y_min);
+
+	const points = [];
+	const colors = [];
+	for (let i = 0; i < particles.length; i++) {
+		if( particles[i].type != type_fluid ){ continue; }
+		const x_i = particles[i].x[0];
+		const y_i = particles[i].x[1];
+		const u_i = particles[i].v[0];
+		const v_i = particles[i].v[1];
+		points.push(
+			(x_i-offsetX)*scale,
+			(y_i-offsetY)*scale,
+			0,
+			(x_i+u_i*scale_arrow_length-offsetX)*scale,
+			(y_i+v_i*scale_arrow_length-offsetY)*scale,
+			0,
+		);
+		color_i = calcColorRGB((vels[i] - v_min) / (v_max - v_min));
+		colors.push(
+			color_i.r,
+			color_i.g,
+			color_i.b,
+			color_i.r,
+			color_i.g,
+			color_i.b,
+		);
+	}
+	return {points,colors};
+}
+
 var global_scope = this.self;
 
 setInterval(() => {
@@ -559,5 +612,6 @@ setInterval(() => {
 		points: convertParticlesToPoints(particles),
 		colors: convertParticlesToColors(particles),
 		sizes: convertParticlesToSizes(particles),
+		arrows: convertParticlesToArrows(particles),
 	});
 });

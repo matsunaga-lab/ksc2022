@@ -5,6 +5,7 @@ document.body.appendChild(renderer.domElement);
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 
+const filename = "js/mps.js"
 const SIZE = 1;
 let camera_width;
 let camera_height;
@@ -24,6 +25,7 @@ let points = null;
 let colors = null;
 let sizes = null;
 let geometry = null;
+let geometry_arrow = null;
 
 function animate() {
 	requestAnimationFrame(animate);
@@ -52,6 +54,27 @@ function animate() {
 			geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
 		}
 
+		if (geometry_arrow == null) {
+			geometry_arrow = new THREE.BufferGeometry();
+			geometry_arrow.setAttribute('position', new THREE.Float32BufferAttribute(arrows.points, 3));
+			geometry_arrow.setAttribute('color', new THREE.Float32BufferAttribute(arrows.colors, 3));
+
+			const material_arrow = new THREE.LineBasicMaterial({
+				vertexColors: true
+			});
+			material_arrow.onBeforeCompile = (shader) => {
+				const keyword = 'uniform float size;';
+				shader.vertexShader = shader.vertexShader.replace(keyword, 'attribute float size;');
+			};
+
+
+			const pointsMesh_arrow = new THREE.LineSegments(geometry_arrow, material_arrow);
+			scene.add(pointsMesh_arrow);
+		} else {
+			geometry_arrow.setAttribute('position', new THREE.Float32BufferAttribute(arrows.points, 3));
+			geometry_arrow.setAttribute('color', new THREE.Float32BufferAttribute(arrows.colors, 3));
+		}
+
 		points = null;
 	}
 
@@ -60,11 +83,12 @@ function animate() {
 
 animate();
 
-let worker = new Worker('js/mps.js');
+let worker = new Worker(filename);
 worker.addEventListener('message', function (e) {
 	points = e.data.points;
 	colors = convertColorRGB(e.data.colors);
 	sizes = e.data.sizes;
+	arrows = e.data.arrows;
 	document.getElementById('time').textContent = e.data.time ? `${Math.round(e.data.time * 100) / 100} s` : '';
 	document.getElementById('stepCount').textContent = e.data.steps ? `${e.data.steps} steps` : '';
 	document.getElementById('processingTime').textContent = e.data.processingTime ? `${Math.floor(e.data.processingTime)} ms/step` : '';
