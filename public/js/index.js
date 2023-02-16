@@ -1,10 +1,11 @@
-const scene = new THREE.Scene();
+let scene = new THREE.Scene();
 
 const renderer = new THREE.WebGLRenderer();
 document.body.appendChild(renderer.domElement);
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 
+const filename = "js/mps.js"
 const SIZE = 1;
 let camera_width;
 let camera_height;
@@ -23,35 +24,55 @@ camera.lookAt(new THREE.Vector3(0, 0, 0));
 let points = null;
 let colors = null;
 let sizes = null;
-let geometry = null;
+
+function ColorToHex(color) {
+	var hexadecimal = color?.toString(16);
+	return hexadecimal?.length == 1 ? "0" + hexadecimal : hexadecimal;
+}
+
+function ConvertRGBtoHex(red, green, blue) {
+	return "0x" + ColorToHex(Math.floor(red * 255)) + ColorToHex(Math.floor(green * 255)) + ColorToHex(Math.floor(blue * 255));
+}
 
 function animate() {
 	requestAnimationFrame(animate);
 
 	if (points) {
-		if (geometry == null) {
-			geometry = new THREE.BufferGeometry();
-			geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
-			geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-			geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+		scene = new THREE.Scene();
 
-			const material = new THREE.PointsMaterial({
-				vertexColors: true
-			});
-			material.onBeforeCompile = (shader) => {
-				const keyword = 'uniform float size;';
-				shader.vertexShader = shader.vertexShader.replace(keyword, 'attribute float size;');
-			};
+		const geometry = new THREE.BufferGeometry();
+		geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
+		geometry.setAttribute('color', new THREE.Float32BufferAttribute(convertColorRGB(colors), 3));
+		geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
 
+		const material = new THREE.PointsMaterial({
+			vertexColors: true
+		});
+		material.onBeforeCompile = (shader) => {
+			const keyword = 'uniform float size;';
+			shader.vertexShader = shader.vertexShader.replace(keyword, 'attribute float size;');
+		};
 
-			const pointsMesh = new THREE.Points(geometry, material);
-			scene.add(pointsMesh);
-		} else {
-			geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
-			geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-			geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+		const pointsMesh = new THREE.Points(geometry, material);
+		scene.add(pointsMesh);
+
+		for (let i = 0; i < particles.length; i++) {
+			if (particles[i].type > 1) {
+				continue;
+			}
+			const dir = new THREE.Vector3(particles[i].v[0], particles[i].v[1], 0);
+
+			//normalize the direction vector (convert to vector of length 1)
+			dir.normalize();
+
+			const origin = new THREE.Vector3(particles[i].x[0] - 0.3, particles[i].x[1] - 0.5, 0);
+			const length = 0.05 * Math.sqrt(particles[i].v[0] ** 2 + particles[i].v[1] ** 2);
+			const hex = Number(ConvertRGBtoHex(colors[i].r, colors[i].g, colors[i].b));
+			//const hex =Number(0xff0000);
+
+			const arrowHelper = new THREE.ArrowHelper(dir, origin, length, hex);
+			scene.add(arrowHelper);
 		}
-
 		points = null;
 	}
 
@@ -59,12 +80,13 @@ function animate() {
 };
 
 animate();
-
-let worker = new Worker('js/mps.js');
+let worker = new Worker(filename);
 worker.addEventListener('message', function (e) {
 	points = e.data.points;
-	colors = convertColorRGB(e.data.colors);
+	colors = e.data.colors;
 	sizes = e.data.sizes;
+	particles = e.data.particles;
+	document.getElementById('time').textContent = e.data.time ? `${Math.round(e.data.time * 100) / 100} s` : '';
 	document.getElementById('stepCount').textContent = e.data.steps ? `${e.data.steps} steps` : '';
 	document.getElementById('processingTime').textContent = e.data.processingTime ? `${Math.floor(e.data.processingTime)} ms/step` : '';
 }, false);
