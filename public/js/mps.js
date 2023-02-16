@@ -2,6 +2,7 @@
 const dim = 2; // 空間次元数
 const rho = 1.0e+3; // 密度 [kg/m^3]
 const nu = 1.0e-6; // 動粘性係数 [m^2/s]
+const sigma = 0.01; // 表面張力係数 [N/m]
 const g_x = 0.0; // 重力加速度x成分 [m/s^2]
 const g_y = -10.0; // 重力加速度y成分 [m/s^2]
 
@@ -26,6 +27,7 @@ const re_inv = 1.0/re; // 影響半径の逆数
 const pnd0 = calc_pnd0(re_non); // 基準粒子数密度
 const pnd0_inv = 1.0/pnd0; // 基準粒子数密度の逆数
 const lambda0 = calc_lambda0(re_non,ell0);
+const potential0 = calc_potential0(re_non,ell0);
 
 // 変数
 let step = 0; // 現在のステップ数
@@ -239,6 +241,24 @@ function calc_lambda0(re_non,ell0) {
 	return ret;
 }
 
+// ポテンシャルモデルの係数を計算する関数
+function calc_potential0(re_non,ell0) {
+	const delta = Math.ceil(re_non);
+	let sum = 0.0;
+	for(let na=0;na<delta;++na){
+		for(let ny=-delta;ny<=delta;++ny){
+			for(let nx=na+1;nx<=delta;++nx){
+				const r_sq = nx*nx+ny*ny;
+				const r_ij = Math.sqrt(r_sq);
+				if( r_ij < re_non ){
+					sum += 1.0/3.0*(r_ij-1.5+0.5*re_non)*(r_ij-re_non)*(r_ij-re_non);
+				}
+			}
+		}
+	}
+	return 2.0/(sum*ell0*ell0*ell0*ell0);
+}
+
 // 時間ステップを計算する関数
 function calc_dt() {
 	let vel_sq_max = 0.0;
@@ -319,6 +339,7 @@ function update() {
 		vel_bak2[i*2+1] = particles[i].v[1];
 	}
 	const coef_laplacian = 2*dim/(pnd0*lambda0);
+	const coef_surfacetension = sigma/rho*potential0;
 	for (let i = 0; i < particles.length; i++) {
 		if( particles[i].type >= type_wall ){
 			continue;
@@ -329,6 +350,8 @@ function update() {
 		const v_i = particles[i].v[1];
 		let lapU_x = 0.0;
 		let lapU_y = 0.0;
+		let po_x = 0.0;
+		let po_y = 0.0;
 		const neighbors = getNeighbors(x_i,y_i);
 		for (let k = 0; k < neighbors.length; k++) {
 			const j = neighbors[k];
@@ -342,13 +365,18 @@ function update() {
 					const v_ij = vel_bak2[j*2+1]-v_i;
 					lapU_x += w_ij*u_ij;
 					lapU_y += w_ij*v_ij;
+					r_ij = Math.sqrt(r_sq)
+					po_x += (r_ij-ell0)*(re-r_ij)*x_ij/r_ij
+					po_y += (r_ij-ell0)*(re-r_ij)*y_ij/r_ij
 				}
 			}
 		}
 		lapU_x *= coef_laplacian;
 		lapU_y *= coef_laplacian;
-		particles[i].v[0] += (lapU_x*nu+g_x)*dt;
-		particles[i].v[1] += (lapU_y*nu+g_y)*dt;
+		po_x *= coef_surfacetension;
+		po_y *= coef_surfacetension;
+		particles[i].v[0] += (lapU_x*nu+g_x+po_x)*dt;
+		particles[i].v[1] += (lapU_y*nu+g_y+po_y)*dt;
 	}
 
 	// 粒子間衝突を計算する
