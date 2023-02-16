@@ -61,12 +61,6 @@ function createInitParticles() {
 	const liquid_width = 0.2; // 液柱の幅 [m]
 	const liquid_height = 0.4; // 液柱の高さ [m]
 	
-	// 可視化領域
-	view_x_min = 0.0;
-	view_x_max = tank_width;
-	view_y_min = 0.0;
-	view_y_max = tank_height;
-	
 	let posX_min = 0.0;
 	let posX_max = liquid_width;
 	let posY_min = 0.0;
@@ -181,6 +175,12 @@ function updateBucket() {
 		}
 		bucket_offset[b+1] = cnt;
 	}
+	
+	// 可視化領域を粒子の存在範囲に基づいて更新する
+	view_x_min = bucket_x_min-ell0*0.5;
+	view_x_max = bucket_x_max+ell0*0.5;
+	view_y_min = bucket_y_min-ell0*0.5;
+	view_y_max = bucket_y_max+ell0*0.5;
 }
 
 // 近傍粒子インデックスリストを返す関数
