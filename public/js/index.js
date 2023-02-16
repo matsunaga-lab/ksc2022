@@ -58,16 +58,50 @@ function animate() {
 	renderer.render(scene, camera);
 };
 
-animate();
+document.addEventListener('DOMContentLoaded', (event) => {
+	const recorder = createRecorder();
 
-let worker = new Worker('js/mps.js');
-worker.addEventListener('message', function (e) {
-	points = e.data.points;
-	colors = convertColorRGB(e.data.colors);
-	sizes = e.data.sizes;
-	document.getElementById('stepCount').textContent = e.data.steps ? `${e.data.steps} steps` : '';
-	document.getElementById('processingTime').textContent = e.data.processingTime ? `${Math.floor(e.data.processingTime)} ms/step` : '';
-}, false);
+	animate();
+
+	let worker = new Worker('js/mps.js');
+	worker.addEventListener('message', function (e) {
+		points = e.data.points;
+		colors = convertColorRGB(e.data.colors);
+		sizes = e.data.sizes;
+		document.getElementById('stepCount').textContent = e.data.steps ? `${e.data.steps} steps` : '';
+		document.getElementById('processingTime').textContent = e.data.processingTime ? `${Math.floor(e.data.processingTime)} ms/step` : '';
+	}, false);
+
+
+});
+
+/* 録画機能 */
+function createRecorder() {
+	const canvas = renderer.domElement;
+	var stream = canvas.captureStream();
+	//ストリームからMediaRecorderを生成
+	const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=h264' });
+	//録画終了時に動画ファイルのダウンロードリンクを生成する処理
+	recorder.ondataavailable = function (e) {
+		var videoBlob = new Blob([e.data], { type: e.data.type });
+		blobUrl = window.URL.createObjectURL(videoBlob);
+		const anchor = document.createElement('a');
+		anchor.download = 'movie.webm';
+		anchor.href = blobUrl;
+		anchor.click();
+		URL.revokeObjectURL(anchor.href);
+	}
+	//録画開始
+	recorder.start();
+
+	const saveButton = document.getElementById("saveButton");
+	document.getElementById("saveButton").addEventListener('click', () => {
+		recorder.stop();
+		saveButton.style.display = 'none';
+	});
+
+	return recorder;
+}
 
 const convertColorRGB = (colors) => {
 	if (colors == null) {
