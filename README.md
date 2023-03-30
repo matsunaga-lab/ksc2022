@@ -6,6 +6,7 @@
 
 1. dockerでサーバーを実行する
 2. node.js(express)でサーバーを実行する
+3. VSCodeの拡張機能「Live Server」を使う（おすすめ）
 
 いずれの場合も http://localhost:3000/ にアクセスすることで動作を確認できます。
 
